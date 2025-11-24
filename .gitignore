@@ -35,15 +35,17 @@ poetry.lock
 .DS_Store
 
 # Project specific
-data/
+data/downloads/
 output/
-*.csv
 *.tsv
 *.gz
 .env
 config/config.yaml
 logs/
 *.log
+
+# Keep sample data for testing
+!data/sample_climate_data.csv
 
 # Testing
 .pytest_cache/
