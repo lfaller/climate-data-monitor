@@ -1,0 +1,95 @@
+# Climate Data Quality Monitor Configuration
+# Copy this file to config/config.yaml and customize for your environment
+
+climate:
+  # NOAA Climate Data Source (Option B: NOAA NCEI Monthly Summaries)
+  # Replace with GHCN URL for Option A: https://www.ncei.noaa.gov/data/ghcn-m/v4/
+  source_url: "https://www.ncei.noaa.gov/data/cdo-web/api/v1/data"
+
+  # API key for NOAA CDO Web (get from https://www.ncei.noaa.gov/cdo-web/api/v1/tokens)
+  api_key: "your_noaa_api_key"
+
+  # Local download directory
+  download_dir: "data/downloads"
+
+  # Dataset ID (e.g., "GHCN_M" for GHCN Monthly, "GSOM" for Global Summary of Month)
+  dataset_id: "GHCN_M"
+
+  # Geographic scope (can be refined later for Phase 2)
+  # Options: "global", "us_only", or specific region codes
+  geographic_scope: "global"
+
+filtering:
+  # Enable/disable filtering
+  enabled: false
+
+  # Filter by station IDs (null/empty list = all stations)
+  # station_ids: ["USW00013874"]  # Example: Central Park weather station
+  station_ids: null
+
+  # Filter by data types (null = all)
+  # data_types: ["TMAX", "TMIN", "PRCP"]  # Temperature max/min, precipitation
+  data_types: null
+
+quilt:
+  # S3 bucket for Quilt registry
+  bucket: "your-climate-registry"
+
+  # Package name in Quilt
+  package_name: "climate/noaa-monthly"
+
+  # Full registry URL
+  registry: "s3://your-climate-registry"
+
+  # Push data to registry (set to false for testing)
+  push_to_registry: true
+
+quality:
+  # Quality assessment thresholds
+  thresholds:
+    min_quality_score: 75
+    max_null_percentage: 15
+    max_outlier_percentage: 5
+    max_drift_percentage: 20
+
+    # Temperature-specific thresholds (Celsius)
+    temp_outlier_std_dev: 3
+    temp_min_valid: -60
+    temp_max_valid: 60
+
+    # Precipitation-specific thresholds (mm)
+    precip_max_daily: 500
+    precip_outlier_std_dev: 4
+
+  # Output directory for quality reports
+  output_dir: "output/quality_reports"
+
+alerts:
+  # Enable alerting system
+  enabled: false
+
+  # Email notifications
+  email: null  # e.g., "your-email@example.com"
+
+  # Slack webhook for notifications
+  slack_webhook: null  # e.g., "https://hooks.slack.com/services/..."
+
+scheduling:
+  # Days between checks for new releases
+  check_interval_days: 30
+
+  # Automatically run pipeline when new release detected
+  auto_run: false
+
+logging:
+  # Logging level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  level: "INFO"
+
+  # Log directory
+  log_dir: "logs"
+
+  # Log to file
+  file_logging: true
+
+  # Log to console
+  console_logging: true
