@@ -7,12 +7,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-12-02
+
 ### Added
-- ClimateDownloader module for fetching NOAA climate data
-- QualityChecker module with climate-specific metrics
-- Comprehensive test suite (80+ tests)
-- Demo pipeline for testing with sample data
-- End-to-end pipeline orchestration
+
+#### Phase 1: Foundation Complete
+
+**ClimateDownloader Module**
+- Load and parse NOAA climate data from CSV files
+- Comprehensive 5-step data validation pipeline:
+  * Required columns validation (station_id, date, element, value)
+  * Date format validation (YYYY-MM-DD)
+  * Element type validation (TMAX, TMIN, PRCP, SNOW, SNWD, etc.)
+  * Numeric value validation
+  * Station ID presence validation
+- Flexible filtering capabilities:
+  * Filter by specific station IDs
+  * Filter by element types (temperature, precipitation, snow)
+  * Filter by date range
+- File operations (load, save, validate)
+- Complete workflow: `download_and_validate()`
+
+**QualityChecker Module**
+- Data completeness metrics:
+  * Null percentage calculation
+  * Duplicate record detection
+- Temperature-specific metrics:
+  * Min/max/mean statistics
+  * Outlier detection (>3 std dev)
+  * Valid range validation
+  * Missing day detection
+- Precipitation-specific metrics:
+  * Min/max/mean statistics
+  * Zero precipitation percentage
+  * Extreme value detection (>500mm/day)
+- Geographic coverage analysis:
+  * Active station counting
+  * New station detection
+  * Inactive station detection
+- Quality scoring (0-100 scale):
+  * Completeness: 30 points
+  * Outlier rate: 25 points
+  * Temperature range validity: 10 points
+  * Geographic coverage: 25 points
+  * Schema stability: 10 points
+- Quality report generation and JSON export
+
+**Testing & Quality**
+- 40 comprehensive tests (20 ClimateDownloader + 20 QualityChecker)
+- 100% test pass rate
+- TDD approach: tests written before implementation
+- Real NOAA GHCN-Daily data structure support
+
+### Status
+- Phase 1: Foundation - COMPLETE ✅
+- 40/80+ tests passing
+- Ready for pipeline orchestration and demo pipeline
 
 ## [0.1.0] - 2025-11-24
 
