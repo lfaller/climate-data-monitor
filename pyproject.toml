@@ -6,6 +6,9 @@ authors = ["Lina Faller <lina.faller@gmail.com>"]
 readme = "README.md"
 packages = [{include = "src"}]
 
+[tool.poetry.scripts]
+climate-monitor = "src.__main__:main"
+
 [tool.poetry.dependencies]
 python = "^3.8.1"
 quilt3 = ">=5.0"
