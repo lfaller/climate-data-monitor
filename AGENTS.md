@@ -1,3 +1,5 @@
+- be concise in everything you do
+- don't use fancy unicode characters or emojis
 - follow test driven development (TDD) best practices (i.e. always write tests first)
 - use poetry for managing the project
 - maintain a changelog
@@ -6,3 +8,4 @@
 - aim to keep the README concise and to-the-point and put extra documenation into a docs folder
 - use a logger for good logging practices
 - use pytest for tests
+- commit files in logical groups with clear, concise commit messages
