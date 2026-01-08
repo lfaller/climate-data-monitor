@@ -14,15 +14,15 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional
 
-from downloader import ClimateDownloader
-from quality_checker import QualityChecker
-from quilt_packager import QuiltPackager
+from .downloader import ClimateDownloader
+from .quality_checker import QualityChecker
+from .quilt_packager import QuiltPackager
 
 logger = logging.getLogger(__name__)
 
 # AWS utilities (optional)
 try:
-    from aws_setup import AWSCredentialValidator, S3RegistryConfig
+    from ..config.aws_setup import AWSCredentialValidator, S3RegistryConfig
     HAS_AWS = True
 except ImportError:
     HAS_AWS = False
@@ -148,7 +148,7 @@ class PipelineOrchestrator:
         self.downloader.validate_columns(df)
         self.downloader.validate_dates(df)
         self.downloader.validate_elements(df)
-        self.downloader.validate_values(df)
+        self.downloader.validate_numeric_values(df)
         self.downloader.validate_station_ids(df)
 
         # Apply filtering if configured

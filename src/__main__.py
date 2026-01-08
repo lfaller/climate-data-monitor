@@ -13,7 +13,7 @@ from pathlib import Path
 
 import yaml
 
-from orchestrator import PipelineOrchestrator
+from .orchestrator import PipelineOrchestrator
 
 
 def setup_logging(config: dict) -> None:
