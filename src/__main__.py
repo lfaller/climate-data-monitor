@@ -134,6 +134,36 @@ def run_pipeline(args) -> int:
         return 1
 
 
+def analyze_package(args) -> int:
+    """Analyze a Quilt package.
+
+    Args:
+        args: Parsed command line arguments
+
+    Returns:
+        Exit code
+    """
+    try:
+        from .quilt_analyzer import QuiltPackageAnalyzer
+
+        analyzer = QuiltPackageAnalyzer(args.package)
+        analyzer.print_summary()
+
+        # Export metadata if requested
+        if args.export_metadata:
+            analyzer.export_metadata_to_json(args.export_metadata)
+
+        # Export data if requested
+        if args.export_data:
+            analyzer.export_data_to_csv(args.export_data)
+
+        return 0
+
+    except Exception as e:
+        print(f"ERROR: Failed to analyze package: {e}", file=sys.stderr)
+        return 1
+
+
 def main() -> int:
     """Main entry point for CLI.
 
@@ -172,6 +202,26 @@ def main() -> int:
         help="Save detailed results to JSON file",
     )
     run_parser.set_defaults(func=run_pipeline)
+
+    # 'analyze' subcommand
+    analyze_parser = subparsers.add_parser("analyze", help="Analyze a Quilt package")
+    analyze_parser.add_argument(
+        "package",
+        help="Package name to analyze (e.g., climate/demo-sample)",
+    )
+    analyze_parser.add_argument(
+        "--export-metadata",
+        type=Path,
+        default=None,
+        help="Export metadata to JSON file",
+    )
+    analyze_parser.add_argument(
+        "--export-data",
+        type=Path,
+        default=None,
+        help="Export data to CSV file",
+    )
+    analyze_parser.set_defaults(func=analyze_package)
 
     # Parse arguments
     args = parser.parse_args()
