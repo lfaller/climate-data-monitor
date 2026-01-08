@@ -12,7 +12,7 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import pytest
 
-from orchestrator import PipelineOrchestrator
+from src.orchestrator import PipelineOrchestrator
 
 
 class TestPipelineOrchestrator:
@@ -84,9 +84,9 @@ class TestPipelineOrchestrator:
 
     def test_orchestrator_initialization(self, sample_config):
         """Test that orchestrator initializes with configuration."""
-        with patch("orchestrator.ClimateDownloader"):
-            with patch("orchestrator.QualityChecker"):
-                with patch("orchestrator.QuiltPackager"):
+        with patch("src.orchestrator.ClimateDownloader"):
+            with patch("src.orchestrator.QualityChecker"):
+                with patch("src.orchestrator.QuiltPackager"):
                     orchestrator = PipelineOrchestrator(sample_config, validate_aws=False)
 
                     assert orchestrator.config == sample_config
@@ -97,9 +97,9 @@ class TestPipelineOrchestrator:
 
     def test_pipeline_run_success(self, sample_config, sample_data_file):
         """Test successful end-to-end pipeline execution."""
-        with patch("orchestrator.ClimateDownloader") as MockDownloader:
-            with patch("orchestrator.QualityChecker") as MockQuality:
-                with patch("orchestrator.QuiltPackager") as MockPackager:
+        with patch("src.orchestrator.ClimateDownloader") as MockDownloader:
+            with patch("src.orchestrator.QualityChecker") as MockQuality:
+                with patch("src.orchestrator.QuiltPackager") as MockPackager:
                     # Mock downloader
                     mock_downloader = MagicMock()
                     mock_downloader.load_csv.return_value = pd.DataFrame({
@@ -151,9 +151,9 @@ class TestPipelineOrchestrator:
         sample_config["filtering"]["enabled"] = True
         sample_config["filtering"]["station_ids"] = ["USC00014821"]
 
-        with patch("orchestrator.ClimateDownloader") as MockDownloader:
-            with patch("orchestrator.QualityChecker") as MockQuality:
-                with patch("orchestrator.QuiltPackager") as MockPackager:
+        with patch("src.orchestrator.ClimateDownloader") as MockDownloader:
+            with patch("src.orchestrator.QualityChecker") as MockQuality:
+                with patch("src.orchestrator.QuiltPackager") as MockPackager:
                     mock_downloader = MagicMock()
                     mock_downloader.load_csv.return_value = pd.DataFrame({
                         "station_id": ["USC00014821"],
@@ -203,21 +203,25 @@ class TestPipelineOrchestrator:
 
     def test_pipeline_handles_errors(self, sample_config):
         """Test that pipeline handles errors gracefully."""
-        with patch("orchestrator.ClimateDownloader") as MockDownloader:
-            # Mock downloader to raise an error
-            MockDownloader.side_effect = ValueError("Invalid configuration")
+        with patch("src.orchestrator.ClimateDownloader") as MockDownloader:
+            with patch("src.orchestrator.QualityChecker"):
+                with patch("src.orchestrator.QuiltPackager"):
+                    # Mock downloader to raise an error during run()
+                    mock_instance = MagicMock()
+                    mock_instance.load_csv.side_effect = ValueError("Invalid data")
+                    MockDownloader.return_value = mock_instance
 
-            orchestrator = PipelineOrchestrator(sample_config, validate_aws=False)
-            results = orchestrator.run(Path("nonexistent.csv"))
+                    orchestrator = PipelineOrchestrator(sample_config, validate_aws=False)
+                    results = orchestrator.run(Path("nonexistent.csv"))
 
-            assert results["success"] is False
-            assert len(results["errors"]) > 0
+                    assert results["success"] is False
+                    assert len(results["errors"]) > 0
 
     def test_status_report_generation(self, sample_config):
         """Test generation of status report."""
-        with patch("orchestrator.ClimateDownloader"):
-            with patch("orchestrator.QualityChecker"):
-                with patch("orchestrator.QuiltPackager"):
+        with patch("src.orchestrator.ClimateDownloader"):
+            with patch("src.orchestrator.QualityChecker"):
+                with patch("src.orchestrator.QuiltPackager"):
                     orchestrator = PipelineOrchestrator(sample_config, validate_aws=False)
 
                     results = {
@@ -243,9 +247,9 @@ class TestPipelineOrchestrator:
 
     def test_status_report_with_errors(self, sample_config):
         """Test status report with errors."""
-        with patch("orchestrator.ClimateDownloader"):
-            with patch("orchestrator.QualityChecker"):
-                with patch("orchestrator.QuiltPackager"):
+        with patch("src.orchestrator.ClimateDownloader"):
+            with patch("src.orchestrator.QualityChecker"):
+                with patch("src.orchestrator.QuiltPackager"):
                     orchestrator = PipelineOrchestrator(sample_config, validate_aws=False)
 
                     results = {
@@ -265,9 +269,9 @@ class TestPipelineOrchestrator:
 
     def test_get_output_filename(self, sample_config):
         """Test output filename generation."""
-        with patch("orchestrator.ClimateDownloader"):
-            with patch("orchestrator.QualityChecker"):
-                with patch("orchestrator.QuiltPackager"):
+        with patch("src.orchestrator.ClimateDownloader"):
+            with patch("src.orchestrator.QualityChecker"):
+                with patch("src.orchestrator.QuiltPackager"):
                     orchestrator = PipelineOrchestrator(sample_config, validate_aws=False)
 
                     output_file = orchestrator._get_output_filename()
