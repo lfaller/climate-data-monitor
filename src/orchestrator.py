@@ -10,7 +10,7 @@ This module coordinates the complete workflow:
 import json
 import logging
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -40,7 +40,7 @@ class PipelineOrchestrator:
             validate_aws: Whether to validate AWS credentials if pushing to S3
         """
         self.config = config
-        self.timestamp = datetime.utcnow()
+        self.timestamp = datetime.now(timezone.utc)
 
         # Initialize pipeline components
         self.downloader = ClimateDownloader(config)
