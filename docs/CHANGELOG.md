@@ -28,8 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - NYC data now scores 99.3-100/100 (previously 77/100)
 - Scores now accurately reflect single-location data quality
 
-#### Model Context Protocol (MCP) Integration
-- Implemented `MCPClimateAnalyzer` with 7 query types:
+#### Custom MCP-Inspired Analysis (Not Official MCP Server)
+- Implemented `MCPClimateAnalyzer` with 7 query types inspired by MCP patterns:
   * `search()` - Find packages by quality/elements
   * `metrics()` - Extract quality metrics
   * `temperature()` - Analyze temperature patterns
@@ -37,9 +37,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `compare()` - Drift detection between versions
   * `sample()` - Fetch sample data for AI context
   * `report()` - Generate human-readable summaries
-- CLI commands for MCP queries: `python -m src mcp <query_type>`
+- CLI commands for analysis queries: `python -m src mcp <query_type>`
 - Interactive demos showing Claude autonomous analysis capabilities
-- Full MCP integration documentation
+- **Note:** This is a custom implementation, not the official Quilt MCP server
+- Can be wrapped with official Quilt MCP server for protocol compliance (future)
 
 #### Data Schema Simplification
 - Removed empty `measurement_flag` and `quality_flag` columns

@@ -10,7 +10,7 @@ Climate Data Monitor provides an end-to-end pipeline for:
 - **Assessing Quality** with climate-specific metrics (data completeness, temporal coverage, seasonality confidence, outlier detection)
 - **Versioning & Packaging** with Quilt for reproducible, governed data access
 - **Publishing to AWS S3** registries for organizational use
-- **AI Analysis** via Model Context Protocol (MCP) for autonomous climate insights with Claude
+- **AI-Ready Analysis** with an MCP-inspired analyzer for autonomous climate insights with Claude
 
 Perfect for scientific teams needing data versioning for regulatory compliance, reproducibility, and cross-functional analysis with AI assistance.
 
@@ -52,7 +52,7 @@ QuiltPackager (versioning, metadata, S3 push)
     ↓
 Quilt Registry (S3 or local)
     ↓
-MCPClimateAnalyzer (Claude + MCP for AI analysis)
+MCPClimateAnalyzer (Custom MCP-inspired analyzer for AI analysis)
 ```
 
 ## Project Structure
@@ -144,13 +144,15 @@ python -m src run --config config/demo_config.yaml \
 - CloudWatch integration
 - Deployment documentation
 
-### MCP Integration (Future)
+### MCP-Inspired Analysis (Available)
 
-Connect with Quilt's Model Context Protocol server for:
-- AI-assisted cross-system analysis
-- Natural language data queries
-- Autonomous quality monitoring
-- AI-generated reports
+The project includes a custom `MCPClimateAnalyzer` that provides MCP-like functionality for:
+- Structured JSON queries (search, metrics, analyze, compare)
+- AI-safe data access patterns (no raw SQL needed)
+- CLI interface for integration with Claude and other AI systems
+- 7 query types for comprehensive climate analysis
+
+**Note:** This is a custom implementation inspired by the Model Context Protocol. For production use of the official Quilt MCP server, see [MCP_INTEGRATION.md](docs/MCP_INTEGRATION.md#official-quilt-mcp-server)
 
 ## Quality Scoring
 
@@ -263,13 +265,13 @@ This project demonstrates:
 1. **Real Climate Data Versioning** - Open-Meteo weather data with full reproducibility
 2. **Quality Monitoring** - 5-metric scoring for data governance and trend detection
 3. **Multi-Version Analysis** - Track quality metrics and seasonal patterns over time
-4. **AI-Assisted Analysis** - Claude + MCP for autonomous climate insights
+4. **AI-Ready Analysis** - Custom MCP-inspired analyzer for autonomous climate insights with Claude
 5. **S3 Integration** - Production-ready AWS deployment with Quilt
 
 ## Next Steps
 
 1. **Deploy to production** - Run with your organization's climate data
-2. **Enable MCP** - Connect Quilt MCP for AI analysis
+2. **Enable AI Analysis** - Use the MCP-inspired analyzer or integrate with official Quilt MCP server
 3. **Add alerts** - Configure Slack/email for quality thresholds
 4. **Schedule runs** - AWS Lambda or cron-based automation
 
