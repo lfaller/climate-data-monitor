@@ -88,8 +88,6 @@ def fetch_open_meteo_data(
                     "date": date,
                     "element": "TMAX",
                     "value": round(float(temp_max), 1),
-                    "measurement_flag": "",
-                    "quality_flag": "",
                     "source_flag": "open-meteo",
                 }
             )
@@ -102,8 +100,6 @@ def fetch_open_meteo_data(
                     "date": date,
                     "element": "TMIN",
                     "value": round(float(temp_min), 1),
-                    "measurement_flag": "",
-                    "quality_flag": "",
                     "source_flag": "open-meteo",
                 }
             )
@@ -116,8 +112,6 @@ def fetch_open_meteo_data(
                     "date": date,
                     "element": "PRCP",
                     "value": round(float(precip), 1),
-                    "measurement_flag": "",
-                    "quality_flag": "",
                     "source_flag": "open-meteo",
                 }
             )
