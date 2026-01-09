@@ -164,6 +164,63 @@ def analyze_package(args) -> int:
         return 1
 
 
+def mcp_query(args) -> int:
+    """Execute MCP-style queries on climate packages (AI-friendly).
+
+    Args:
+        args: Parsed command line arguments
+
+    Returns:
+        Exit code
+    """
+    try:
+        from .mcp_analyzer import MCPClimateAnalyzer
+
+        analyzer = MCPClimateAnalyzer()
+
+        # Route to appropriate query type
+        if args.query_type == "search":
+            results = analyzer.search_packages(
+                quality_threshold=args.quality_threshold,
+                element_filter=args.elements,
+            )
+            print(json.dumps(results, indent=2, default=str))
+
+        elif args.query_type == "metrics":
+            metrics = analyzer.get_package_metrics(args.package)
+            print(json.dumps(metrics, indent=2, default=str))
+
+        elif args.query_type == "compare":
+            if not args.compare_with:
+                print("ERROR: --compare-with required for 'compare' query", file=sys.stderr)
+                return 1
+            comparison = analyzer.compare_packages(args.package, args.compare_with)
+            print(json.dumps(comparison, indent=2, default=str))
+
+        elif args.query_type == "sample":
+            sample = analyzer.get_data_sample(args.package, limit=args.limit)
+            print(json.dumps(sample, indent=2, default=str))
+
+        elif args.query_type == "temperature":
+            analysis = analyzer.analyze_temperature_trends(args.package)
+            print(json.dumps(analysis, indent=2, default=str))
+
+        elif args.query_type == "completeness":
+            completeness = analyzer.analyze_data_completeness(args.package)
+            print(json.dumps(completeness, indent=2, default=str))
+
+        elif args.query_type == "report":
+            report = analyzer.generate_summary_report(args.package)
+            print(report)
+
+        return 0
+
+    except Exception as e:
+        print(f"ERROR: MCP query failed: {e}", file=sys.stderr)
+        logging.exception("MCP query error")
+        return 1
+
+
 def main() -> int:
     """Main entry point for CLI.
 
@@ -222,6 +279,54 @@ def main() -> int:
         help="Export data to CSV file",
     )
     analyze_parser.set_defaults(func=analyze_package)
+
+    # 'mcp' subcommand for AI-friendly queries
+    mcp_parser = subparsers.add_parser(
+        "mcp",
+        help="Execute MCP-style queries (AI-friendly analysis)",
+    )
+    mcp_parser.add_argument(
+        "query_type",
+        choices=[
+            "search",
+            "metrics",
+            "compare",
+            "sample",
+            "temperature",
+            "completeness",
+            "report",
+        ],
+        help="Type of query to execute",
+    )
+    mcp_parser.add_argument(
+        "--package",
+        default="climate/demo-sample",
+        help="Package to query (default: climate/demo-sample)",
+    )
+    mcp_parser.add_argument(
+        "--quality-threshold",
+        type=float,
+        default=None,
+        help="For 'search': minimum quality score (0-100)",
+    )
+    mcp_parser.add_argument(
+        "--elements",
+        nargs="+",
+        default=None,
+        help="For 'search': filter by climate elements (TMAX TMIN PRCP etc)",
+    )
+    mcp_parser.add_argument(
+        "--compare-with",
+        default=None,
+        help="For 'compare': second package to compare with",
+    )
+    mcp_parser.add_argument(
+        "--limit",
+        type=int,
+        default=10,
+        help="For 'sample': number of rows to return (default: 10)",
+    )
+    mcp_parser.set_defaults(func=mcp_query)
 
     # Parse arguments
     args = parser.parse_args()

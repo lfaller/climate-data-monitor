@@ -320,12 +320,12 @@ class QualityChecker:
     def calculate_quality_score(self, df: pd.DataFrame) -> float:
         """Calculate overall quality score (0-100).
 
-        Scoring breakdown (from PROJECT_PLAN.md):
-        - Completeness: 30 points (max 15% null)
+        Scoring breakdown:
+        - Data completeness: 30 points (max 15% null)
         - Outlier rate: 25 points (max 5% outliers)
-        - Temperature range validity: 10 points
-        - Geographic coverage: 25 points (station reporting)
-        - Schema stability: 10 points
+        - Temporal completeness: 20 points (no gaps in date range)
+        - Seasonality confidence: 15 points (expected seasonal patterns)
+        - Schema stability: 10 points (required columns present)
 
         Args:
             df: DataFrame to score
@@ -338,7 +338,7 @@ class QualityChecker:
 
         score = 0.0
 
-        # Completeness (30 points)
+        # Data completeness (30 points)
         null_pct = self.calculate_null_percentage(df)
         completeness_score = max(0, 30 * (1 - (null_pct / self.max_null_percentage)))
         score += completeness_score
@@ -350,18 +350,31 @@ class QualityChecker:
         outlier_score = max(0, 25 * (1 - (outlier_pct / self.max_outlier_percentage)))
         score += outlier_score
 
-        # Temperature range validity (10 points)
+        # Temporal completeness (20 points)
+        # Check for gaps in date range
         try:
-            self.validate_temperature_range(df)
-            score += 10
-        except ValueError:
-            score += 0
+            dates = pd.to_datetime(df["date"])
+            min_date = dates.min()
+            max_date = dates.max()
+            total_days = (max_date - min_date).days + 1
+            unique_dates = df["date"].nunique()
+            # Expected: one row per date per element (TMAX, TMIN, PRCP = 3 per day)
+            expected_records = total_days * 3
+            actual_records = len(df)
+            coverage_ratio = actual_records / expected_records if expected_records > 0 else 0
+            temporal_score = max(0, 20 * coverage_ratio)
+        except Exception:
+            temporal_score = 0.0
+        score += temporal_score
 
-        # Geographic coverage (25 points)
-        # More stations = better coverage
-        station_count = self.count_active_stations(df)
-        coverage_score = min(25, station_count * 2)
-        score += coverage_score
+        # Seasonality confidence (15 points)
+        # Check if temperature patterns match expected seasonal variation
+        # (requires TMAX and TMIN data across multiple months)
+        try:
+            seasonality_score = self._score_seasonality_confidence(df)
+            score += seasonality_score
+        except Exception:
+            score += 0
 
         # Schema stability (10 points)
         # Check if all required columns present
@@ -372,6 +385,53 @@ class QualityChecker:
         final_score = min(100, score)
         logger.info(f"Quality score calculated: {final_score:.2f}")
         return float(final_score)
+
+    def _score_seasonality_confidence(self, df: pd.DataFrame) -> float:
+        """Score seasonal pattern confidence (0-15 points).
+
+        Checks if temperature variation matches expected seasonality.
+        Awards points based on:
+        - Presence of both TMAX and TMIN
+        - Temperature range span (at least 10°C difference)
+        - Multiple months of data
+
+        Args:
+            df: DataFrame with climate data
+
+        Returns:
+            Seasonality confidence score (0-15)
+        """
+        temp_df = df[df["element"].isin(["TMAX", "TMIN"])].copy()
+
+        if len(temp_df) == 0:
+            return 0.0
+
+        # Check for both TMAX and TMIN
+        has_tmax = "TMAX" in temp_df["element"].values
+        has_tmin = "TMIN" in temp_df["element"].values
+
+        if not (has_tmax and has_tmin):
+            return 0.0
+
+        # Check temperature range (at least 10°C variation is expected)
+        temp_range = temp_df["value"].max() - temp_df["value"].min()
+        if temp_range < 10:
+            return 0.0
+
+        # Check for multiple months of data
+        dates = pd.to_datetime(df["date"])
+        num_months = (dates.max().year - dates.min().year) * 12 + (dates.max().month - dates.min().month) + 1
+
+        if num_months < 3:
+            return 0.0  # Less than 3 months = insufficient for seasonality check
+
+        # Award points based on data span
+        if num_months >= 12:
+            return 15.0  # Full year or more
+        elif num_months >= 6:
+            return 10.0  # Half year
+        else:
+            return 5.0  # 3-5 months
 
     def generate_quality_report(self, df: pd.DataFrame) -> Dict[str, Any]:
         """Generate comprehensive quality report for dataset.

@@ -1,17 +1,18 @@
 # Climate Data Monitor
 
-Automated data quality monitoring for NOAA climate data with Quilt versioning, S3 integration, and AI-ready MCP support.
+Automated data quality monitoring for real climate data with Quilt versioning, S3 integration, and AI-ready MCP support.
 
 ## Overview
 
 Climate Data Monitor provides an end-to-end pipeline for:
 
-- **Downloading & Validating** NOAA climate data (GHCN-Daily format)
-- **Assessing Quality** with climate-specific metrics (temperature ranges, precipitation extremes, geographic coverage)
+- **Downloading & Validating** real historical weather data (Open-Meteo API or local files)
+- **Assessing Quality** with climate-specific metrics (data completeness, temporal coverage, seasonality confidence, outlier detection)
 - **Versioning & Packaging** with Quilt for reproducible, governed data access
 - **Publishing to AWS S3** registries for organizational use
+- **AI Analysis** via Model Context Protocol (MCP) for autonomous climate insights with Claude
 
-Perfect for scientific teams needing data versioning for regulatory compliance, reproducibility, and cross-functional analysis.
+Perfect for scientific teams needing data versioning for regulatory compliance, reproducibility, and cross-functional analysis with AI assistance.
 
 ## Quick Start
 
@@ -41,15 +42,17 @@ See [PIPELINE_GUIDE.md](docs/PIPELINE_GUIDE.md) for detailed instructions.
 ## Architecture
 
 ```
-NOAA Climate Data
+Open-Meteo API / Local Files
     ↓
-ClimateDownloader (5-step validation)
+ClimateDownloader (validate, parse, normalize)
     ↓
-QualityChecker (scoring, drift detection)
+QualityChecker (5-metric scoring: completeness, outliers, temporal coverage, seasonality, schema)
     ↓
-QuiltPackager (versioning, metadata)
+QuiltPackager (versioning, metadata, S3 push)
     ↓
-S3 Registry (governed, searchable)
+Quilt Registry (S3 or local)
+    ↓
+MCPClimateAnalyzer (Claude + MCP for AI analysis)
 ```
 
 ## Project Structure
@@ -151,21 +154,26 @@ Connect with Quilt's Model Context Protocol server for:
 
 ## Quality Scoring
 
-The quality score (0-100) combines:
+The quality score (0-100) combines 5 actionable metrics:
 
-| Component | Weight | Metrics |
-|-----------|--------|---------|
-| Data Completeness | 30% | Null %, duplicates |
-| Temperature | 35% | Range validation, outliers |
-| Precipitation | 15% | Extremes, distribution |
-| Geographic Coverage | 15% | Station count, drift |
-| Schema Stability | 5% | Required columns |
+| Metric | Points | What It Measures |
+|--------|--------|------------------|
+| Data Completeness | 30 | No missing values (null %) |
+| Outlier Rate | 25 | No impossible temperature values |
+| Temporal Completeness | 20 | No gaps in date coverage |
+| Seasonality Confidence | 15 | Reliable seasonal patterns detected |
+| Schema Stability | 10 | All required columns present |
 
 **Score Interpretation:**
-- 90-100: Excellent
-- 75-90: Good, acceptable for use
-- 50-75: Moderate, review results
-- <50: Poor, investigate data
+- 95-100: Excellent - Production ready
+- 85-95: Very Good - Ready for analysis
+- 75-85: Good - Usable with caveats
+- <75: Fair - Investigate issues
+
+**Real Data Example (NYC 2023-2025):**
+- 2024: **100/100** - Perfect: 0% null, no outliers, 365 days covered, 12+ months seasonality
+- 2025: **100/100** - Perfect: same as above
+- 2023: **99.3/100** - Excellent: 1 temperature outlier detected, otherwise perfect
 
 ## Configuration
 
@@ -240,21 +248,23 @@ Development:
 
 ## Real-World Data
 
-The project uses real NOAA GHCN-Daily climate data:
+The project includes **3 years of real NYC weather data (2023-2025)** from Open-Meteo API:
 
-- 200+ observation records
-- Multiple stations (TMAX, TMIN, PRCP)
-- Realistic data quality issues
-- Historical versioning capability
+- **1,095-1,098 records per year** (365-366 days × 3 elements: TMAX, TMIN, PRCP)
+- **0% null data** - Complete daily temperature and precipitation readings
+- **Realistic variation** - 51.5% rainy days in 2023 → 46.6% in 2025 (natural climate variation)
+- **Quality scores** - 99.3-100/100 (demonstrating excellent data quality)
+- **Seasonal patterns** - Clear winter/summer temperature variation for analysis
 
 ## Production Use Cases
 
 This project demonstrates:
 
-1. **Scientific Data Versioning** - NOAA data with full reproducibility
-2. **Quality Monitoring** - Automated metrics for data governance
-3. **Multi-Version Analysis** - Track quality metrics over time
-4. **S3 Integration** - Production-ready AWS deployment
+1. **Real Climate Data Versioning** - Open-Meteo weather data with full reproducibility
+2. **Quality Monitoring** - 5-metric scoring for data governance and trend detection
+3. **Multi-Version Analysis** - Track quality metrics and seasonal patterns over time
+4. **AI-Assisted Analysis** - Claude + MCP for autonomous climate insights
+5. **S3 Integration** - Production-ready AWS deployment with Quilt
 
 ## Next Steps
 

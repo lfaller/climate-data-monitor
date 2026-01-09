@@ -7,6 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-01-09
+
+### Added
+
+#### Real Weather Data Integration
+- Integrated Open-Meteo API for free historical weather data (no API keys needed)
+- Added `fetch_open_meteo_data.py` helper script to download real climate data
+- NYC weather data (2023-2025): 1,095-1,098 records per year, 0% null values
+- Real data exploration documentation: `explore_real_data_sources.py`
+
+#### Quality Score Redesign
+- Replaced geographic coverage metric with actionable metrics
+- New 5-metric quality scoring system:
+  * Data Completeness: 30 points (null % check)
+  * Outlier Rate: 25 points (impossible temperature values)
+  * Temporal Completeness: 20 points (date range coverage)
+  * Seasonality Confidence: 15 points (seasonal pattern detection)
+  * Schema Stability: 10 points (required columns present)
+- NYC data now scores 99.3-100/100 (previously 77/100)
+- Scores now accurately reflect single-location data quality
+
+#### Model Context Protocol (MCP) Integration
+- Implemented `MCPClimateAnalyzer` with 7 query types:
+  * `search()` - Find packages by quality/elements
+  * `metrics()` - Extract quality metrics
+  * `temperature()` - Analyze temperature patterns
+  * `completeness()` - Check data completeness by element/station
+  * `compare()` - Drift detection between versions
+  * `sample()` - Fetch sample data for AI context
+  * `report()` - Generate human-readable summaries
+- CLI commands for MCP queries: `python -m src mcp <query_type>`
+- Interactive demos showing Claude autonomous analysis capabilities
+- Full MCP integration documentation
+
+#### Data Schema Simplification
+- Removed empty `measurement_flag` and `quality_flag` columns
+- Simplified schema: station_id, date, element, value, source_flag (5 columns)
+- Result: 0% null percentage reporting (previously 28.57%)
+- Cleaner, more honest data quality metrics
+
+#### Bug Fixes
+- Fixed null_percentage calculation in data completeness analysis
+- Corrected denominator to use (rows × columns) instead of just rows
+- Percentages now correctly range 0-100% (previously could exceed 100%)
+
+### Changed
+- Documentation updated to reflect Open-Meteo as primary data source
+- All quality metrics and examples updated with new 5-metric scoring
+- Architecture diagrams updated to include MCP analyzer layer
+- Project status: Phase 1 Complete, Phase 2 In Progress (MCP)
+
 ## [0.3.0] - 2025-12-02
 
 ### Added

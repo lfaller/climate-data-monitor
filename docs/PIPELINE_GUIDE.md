@@ -4,11 +4,12 @@ This guide covers running the complete end-to-end climate data monitoring pipeli
 
 ## Overview
 
-The pipeline coordinates three main phases:
+The pipeline coordinates four main phases:
 
-1. **Download & Validate** - Fetch and validate climate data from NOAA sources
-2. **Quality Assessment** - Calculate quality metrics and generate reports
-3. **Package & Version** - Create Quilt packages and push to S3 registry
+1. **Download & Validate** - Load and validate real climate data (Open-Meteo API or local files)
+2. **Quality Assessment** - Calculate 5 quality metrics (completeness, outliers, temporal coverage, seasonality, schema)
+3. **Package & Version** - Create Quilt packages with metadata
+4. **AI Analysis** (Optional) - Query data via Model Context Protocol (MCP) for Claude analysis
 
 ## Quick Start
 
@@ -21,9 +22,9 @@ python -m src run --config config/demo_config.yaml
 ```
 
 This will:
-- Load sample NOAA climate data from `data/sample_climate_data.csv`
-- Validate the data
-- Calculate quality metrics
+- Load real weather data from `data/real_nyc_2024.csv` (or your specified data file)
+- Validate the data format and values
+- Calculate 5 quality metrics (completeness, outliers, temporal, seasonality, schema)
 - Build a Quilt package locally to `~/.quilt/packages`
 
 Expected output:
@@ -32,16 +33,16 @@ Expected output:
 Climate Data Monitor - Pipeline Execution Report
 ============================================================
 Status: ✓ SUCCESS
-Timestamp: 2024-01-12T14:32:00.000Z
+Timestamp: 2026-01-09T13:58:13.000Z
 Package: climate/demo-sample
 
-Data File: data/downloads/climate_data_processed_20240112_143200.csv
+Data File: data/downloads/climate_data_processed_20260109_135813.csv
 
 Quality Metrics:
-  Quality Score: 87.5/100
-  Rows: 200
-  Null %: 2.50%
-  Stations: 5
+  Quality Score: 100.0/100
+  Rows: 1098
+  Null %: 0.00%
+  Stations: 1
 
 ============================================================
 ```

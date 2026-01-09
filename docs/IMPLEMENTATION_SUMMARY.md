@@ -118,25 +118,25 @@ Created comprehensive user and developer documentation:
 The complete pipeline now operates as:
 
 ```
-Input Data (Local File or NOAA Source)
+Input Data (Open-Meteo API / Local File)
     ↓
 [PipelineOrchestrator.run()]
     ├─→ Download & Validate (ClimateDownloader)
     │   ├─ Load CSV
-    │   ├─ Validate columns
-    │   ├─ Validate dates
-    │   ├─ Validate elements
-    │   ├─ Validate values
+    │   ├─ Validate columns (station_id, date, element, value, source_flag)
+    │   ├─ Validate dates (YYYY-MM-DD format)
+    │   ├─ Validate elements (TMAX, TMIN, PRCP)
+    │   ├─ Validate values (realistic temperature/precipitation ranges)
     │   ├─ Validate station IDs
     │   └─ Apply optional filtering
     │
-    ├─→ Assess Quality (QualityChecker)
-    │   ├─ Data completeness metrics
-    │   ├─ Temperature statistics
-    │   ├─ Precipitation analysis
-    │   ├─ Geographic coverage
-    │   ├─ Calculate quality score (0-100)
-    │   └─ Generate JSON report
+    ├─→ Assess Quality (QualityChecker) - 5 metrics:
+    │   ├─ Data completeness (30 pts) - null % check
+    │   ├─ Outlier rate (25 pts) - impossible values
+    │   ├─ Temporal completeness (20 pts) - date coverage
+    │   ├─ Seasonality confidence (15 pts) - seasonal patterns
+    │   ├─ Schema stability (10 pts) - required columns
+    │   └─ Generate JSON report with quality score
     │
     └─→ Package & Version (QuiltPackager)
         ├─ Create Quilt package
