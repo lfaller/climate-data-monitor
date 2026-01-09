@@ -23,40 +23,45 @@ The Model Context Protocol (MCP) is a standardized interface that allows AI syst
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                     CLIMATE DATA SOURCES                        │
-│                  (NOAA, Local Files, etc)                       │
+│                 REAL WEATHER DATA SOURCES                       │
+│          (Open-Meteo API, Local Files, Other APIs)             │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│              CLIMATE DATA MONITOR PIPELINE                       │
-│  (Downloader → QualityChecker → QuiltPackager → S3)            │
+│           CLIMATE DATA MONITOR PIPELINE                          │
+│  Downloader → QualityChecker (5 metrics) → Packager → S3        │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│         QUILT DATA REGISTRY (Versioned Packages)                │
-│         S3 or Local: /Library/Application Support/Quilt          │
+│          QUILT DATA REGISTRY (Versioned Packages)               │
+│        S3 or Local: /Library/Application Support/Quilt          │
 └────────────────────────────┬────────────────────────────────────┘
                              │
          ┌───────────────────┼───────────────────┐
          │                   │                   │
          ▼                   ▼                   ▼
-    ┌────────┐         ┌─────────┐        ┌──────────┐
-    │ Claude │         │ MCPCli  │        │ Custom AI│
-    │Desktop │         │ Tools   │        │ Systems  │
-    └────────┘         └─────────┘        └──────────┘
+    ┌────────┐         ┌──────────┐        ┌──────────┐
+    │ Claude │         │ CLI Tools│        │ Custom AI│
+    │Desktop │         │ / Python │        │ Systems  │
+    └────────┘         └──────────┘        └──────────┘
          │                   │                   │
          └───────────────────┼───────────────────┘
                              │
-                    ┌────────▼────────┐
-                    │  MCPAnalyzer    │
-                    │  - search()     │
-                    │  - metrics()    │
-                    │  - compare()    │
-                    │  - sample()     │
-                    │  - analyze()    │
-                    └────────────────┘
+                    ┌────────▼──────────┐
+                    │ MCPClimateAnalyzer│
+                    │ 7 Query Types:    │
+                    │ - search()        │
+                    │ - metrics()       │
+                    │ - temperature()   │
+                    │ - completeness()  │
+                    │ - compare()       │
+                    │ - sample()        │
+                    │ - report()        │
+                    └────────┬──────────┘
+                             │
+                   AI-Driven Insights
 ```
 
 ---
