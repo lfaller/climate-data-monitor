@@ -1,21 +1,25 @@
-# Quilt MCP Integration Guide
+# AI Analysis with Climate Data Monitor
 
 ## Overview
 
-Climate Data Monitor integrates with Quilt's Model Context Protocol (MCP) to enable AI-assisted analysis of climate packages. This allows Claude and other AI systems to autonomously query, analyze, and generate insights from versioned climate data.
+Climate Data Monitor provides AI-ready analysis capabilities through a custom `MCPClimateAnalyzer` that implements MCP-inspired patterns for climate data queries. This allows Claude and other AI systems to autonomously query, analyze, and generate insights from versioned climate data.
 
 **Key Benefit:** Transform manual data analysis (2-5 days) into AI-assisted workflows (10 minutes).
 
+**Note on Implementation:** This guide describes a custom analyzer that provides MCP-like functionality. For integration with Quilt's official Model Context Protocol server, see the [Official Quilt MCP Server](#official-quilt-mcp-server) section below.
+
 ---
 
-## What is MCP?
+## Custom MCP-Inspired Analyzer
 
-The Model Context Protocol (MCP) is a standardized interface that allows AI systems like Claude to:
-- **Search** data packages by metadata
-- **Query** structured data via SQL/filters
-- **Fetch** specific data files
-- **Analyze** with domain-specific tools
-- **Package** results as versioned artifacts
+The `MCPClimateAnalyzer` in Climate Data Monitor is a custom implementation that provides MCP-like functionality:
+- **Search** climate packages by quality and element filters
+- **Query** structured data via JSON-safe methods
+- **Fetch** sample data and metrics
+- **Analyze** temperature trends, completeness, quality metrics
+- **Report** human-readable summaries
+
+This custom implementation shares the same design philosophy as the Model Context Protocol: providing structured, AI-safe data access without raw SQL or filesystem operations.
 
 ---
 
@@ -385,6 +389,66 @@ print(response.content[0].text)
 
 ---
 
+## Official Quilt MCP Server
+
+**Current Status:** Climate Data Monitor uses a custom analyzer. Quilt has released an official Model Context Protocol server.
+
+### Why Two Options?
+
+**Custom MCPClimateAnalyzer (Current):**
+- ✅ Works immediately without additional setup
+- ✅ Optimized for climate data patterns
+- ✅ 7 query types specific to weather analysis
+- ❌ Not protocol-compliant (no stdio/HTTP)
+- ❌ CLI-only integration
+- **Use for:** Quick CLI testing, Claude API integration without MCP protocol
+
+**Official Quilt MCP Server:**
+- ✅ Protocol-compliant (stdio-based communication)
+- ✅ Works with Claude Desktop and other MCP clients
+- ✅ Maintained by Quilt team
+- ✅ Supports all Quilt packages (not just climate)
+- ❌ Requires additional setup
+- **Use for:** Production deployments, Claude Desktop integration, cross-domain analysis
+
+### Migrating to Official Quilt MCP Server
+
+If you want to use Quilt's official MCP server:
+
+1. **Install quilt-mcp-server:**
+   ```bash
+   pip install quilt-mcp-server
+   # Or build from source:
+   # https://github.com/quiltdata/quilt-mcp-server
+   ```
+
+2. **Configure Claude Desktop** (if using MCP):
+   ```json
+   {
+     "mcp_servers": {
+       "quilt": {
+         "command": "quilt-mcp-server",
+         "env": {
+           "QUILT_REGISTRY": "s3://your-bucket"
+         }
+       }
+     }
+   }
+   ```
+
+3. **Use with Claude Desktop:**
+   - Claude will have access to Quilt's official MCP tools
+   - Query climate packages along with other Quilt data
+   - Full protocol compliance for robustness
+
+### Reference
+
+- **Quilt MCP Server Repository:** https://github.com/quiltdata/quilt-mcp-server
+- **Model Context Protocol Spec:** https://modelcontextprotocol.io
+- **Quilt Documentation:** https://quiltdata.com/docs
+
+---
+
 ## File Organization
 
 ```
@@ -408,21 +472,25 @@ docs/
 
 ## Next Steps
 
-### For Local Testing
+### For Local Testing (Custom Analyzer)
 1. Run `poetry run python -m src mcp report` to verify setup
 2. Explore different query types
 3. Test with your own climate packages
+4. Use with Claude API for AI analysis (see CHANGELOG.md for example)
 
-### For Claude Integration
-1. Understand how Claude uses tools via the MCP protocol
+### For Production (Choose Your Path)
+
+**Option A: Continue with Custom Analyzer**
+1. Deploy MCPClimateAnalyzer to AWS Lambda
+2. Integrate with Claude API for autonomous analysis
+3. Set up CloudWatch alarms for quality thresholds
+4. Create automated email/Slack alerts
+
+**Option B: Migrate to Official Quilt MCP Server**
+1. Install quilt-mcp-server (see [Official Quilt MCP Server](#official-quilt-mcp-server) section)
 2. Set up Claude Desktop with MCP plugin
-3. Test natural language queries
-
-### For Production
-1. Deploy to AWS Lambda for serverless analysis
-2. Set up CloudWatch alarms for quality thresholds
-3. Create automated email/Slack alerts
-4. Build visualization dashboard with historical trends
+3. Deploy as stdio-based service
+4. Leverage full MCP protocol compliance
 
 ---
 
