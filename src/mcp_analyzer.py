@@ -272,7 +272,7 @@ class MCPClimateAnalyzer:
                     by_element[element] = {
                         "count": len(element_data),
                         "null_percentage": float(
-                            (element_data.isnull().sum().sum() / len(element_data))
+                            (element_data.isnull().sum().sum() / (len(element_data) * len(element_data.columns)))
                             * 100
                         ),
                     }
@@ -286,7 +286,7 @@ class MCPClimateAnalyzer:
                     by_station[station] = {
                         "count": len(station_data),
                         "null_percentage": float(
-                            (station_data.isnull().sum().sum() / len(station_data))
+                            (station_data.isnull().sum().sum() / (len(station_data) * len(station_data.columns)))
                             * 100
                         ),
                     }
