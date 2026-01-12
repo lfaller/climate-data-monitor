@@ -137,7 +137,7 @@ poetry run python -m src run --config config/demo_config.yaml --push
 
 **Verify the push worked:**
 ```bash
-poetry run python -m src analyze --package climate/data
+poetry run python -m src analyze climate/data
 ```
 
 ## CLI Reference

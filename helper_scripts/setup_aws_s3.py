@@ -287,7 +287,7 @@ def print_summary(bucket_name: str, region: str, config_file: Path) -> None:
     print(f"\n   3. Run the pipeline with S3 push enabled:")
     print(f"      poetry run python -m src run --config {config_file}")
     print(f"\n   4. Verify package in S3 registry:")
-    print(f"      poetry run python -m src analyze --package climate/data")
+    print(f"      poetry run python -m src analyze climate/data")
 
     print(f"\n💡 Testing the Pipeline:")
     print(f"   # Test with demo data (local, no S3):")
