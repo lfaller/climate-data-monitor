@@ -206,32 +206,37 @@ Current coverage: **61+ tests across 4 modules**
 
 ## AWS Setup
 
-### 1. Create S3 Bucket
+### Automated Setup (Recommended)
+
+Use the helper script to automatically create S3 bucket and generate configuration:
 
 ```bash
-aws s3 mb s3://your-climate-data-bucket --region us-west-2
+# Interactive mode
+poetry run python helper_scripts/setup_aws_s3.py
+
+# Or specify bucket name directly
+poetry run python helper_scripts/setup_aws_s3.py --bucket-name my-climate-bucket --region us-west-2
 ```
 
-### 2. Configure Credentials
+This will:
+- ✅ Validate AWS credentials
+- ✅ Create S3 bucket (with versioning enabled)
+- ✅ Block public access
+- ✅ Test bucket access
+- ✅ Generate `config/production_config.yaml`
+
+### Manual Setup (Alternative)
 
 ```bash
+# Create and configure bucket
+aws s3 mb s3://your-climate-data-bucket --region us-west-2
+aws s3api put-bucket-versioning --bucket your-climate-data-bucket --versioning-configuration Status=Enabled
+
+# Configure credentials
 export AWS_ACCESS_KEY_ID=your-key
 export AWS_SECRET_ACCESS_KEY=your-secret
-export AWS_DEFAULT_REGION=us-west-2
-```
 
-### 3. Update Configuration
-
-```yaml
-quilt:
-  bucket: "your-climate-data-bucket"
-  registry: "s3://your-climate-data-bucket"
-  push_to_registry: true
-```
-
-### 4. Run Pipeline
-
-```bash
+# Run pipeline
 python -m src run --config config/production_config.yaml
 ```
 
