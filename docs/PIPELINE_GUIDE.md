@@ -137,7 +137,8 @@ poetry run python -m src run --config config/demo_config.yaml --push
 
 **Verify the push worked:**
 ```bash
-poetry run python -m src analyze climate/data
+# Analyze package from S3 registry
+poetry run python -m src analyze climate/data --registry s3://your-climate-data-bucket
 ```
 
 ## CLI Reference
@@ -172,6 +173,36 @@ python -m src run --config config/demo_config.yaml --data-file path/to/my_data.c
 **Run with demo config but push to S3:**
 ```bash
 python -m src run --config config/demo_config.yaml --push
+```
+
+### Analyze Command
+
+Analyze a Quilt package (local or from S3 registry):
+
+```bash
+python -m src analyze <package_name> [options]
+```
+
+**Options:**
+
+| Option | Description |
+|--------|-------------|
+| `<package_name>` | Package name to analyze (e.g., `climate/demo-sample`) |
+| `--registry` | S3 registry URL (e.g., `s3://my-bucket`). If not provided, uses local registry |
+| `--export-metadata` | Export package metadata to JSON file |
+| `--export-data` | Export package data to CSV file |
+
+**Examples:**
+
+```bash
+# Analyze local package
+python -m src analyze climate/demo-sample
+
+# Analyze package from S3 registry
+python -m src analyze climate/data --registry s3://climate-data-monitor-quilt
+
+# Export data to CSV
+python -m src analyze climate/data --registry s3://my-bucket --export-data output.csv
 ```
 
 ## Configuration
