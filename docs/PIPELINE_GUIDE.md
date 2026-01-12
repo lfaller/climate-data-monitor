@@ -74,47 +74,70 @@ export AWS_PROFILE=your-profile-name
 python -m src run --config config/production_config.yaml
 ```
 
-#### 2. Create Production Configuration
+#### 2. Automated AWS Setup (Recommended)
 
-Copy the template and customize for your AWS setup:
+Use the helper script to automatically create S3 bucket and generate configuration:
 
+**Interactive mode (guided setup):**
 ```bash
-cp config/production_config.yaml.template config/production_config.yaml
+poetry run python helper_scripts/setup_aws_s3.py
 ```
 
-Edit `config/production_config.yaml`:
+This will:
+- ✅ Validate your AWS credentials
+- ✅ Create an S3 bucket (or use existing)
+- ✅ Enable versioning (required for Quilt)
+- ✅ Block public access (security best practice)
+- ✅ Test read/write access
+- ✅ Generate `config/production_config.yaml`
 
-```yaml
-quilt:
-  bucket: "your-climate-data-bucket"        # Your S3 bucket name
-  package_name: "climate/ghcn-daily"        # Package namespace/name
-  registry: "s3://your-climate-data-bucket" # Must match bucket
-  push_to_registry: true                     # Enable S3 push
-
-aws:
-  region: "us-west-2"                        # Your AWS region
-  validate_credentials: true                 # Validate before running
-  test_bucket_access: true                   # Test bucket access
+**Command-line mode (non-interactive):**
+```bash
+poetry run python helper_scripts/setup_aws_s3.py \
+  --bucket-name my-climate-data-bucket \
+  --region us-west-2
 ```
 
-#### 3. Create S3 Bucket
+**For existing buckets:**
+```bash
+poetry run python helper_scripts/setup_aws_s3.py \
+  --bucket-name my-climate-data-bucket \
+  --skip-bucket-create
+```
 
-If you don't have an S3 bucket yet:
+#### 3. Manual AWS Setup (Alternative)
+
+If you prefer manual setup:
 
 ```bash
+# Create bucket
 aws s3 mb s3://your-climate-data-bucket --region us-west-2
+
+# Enable versioning
+aws s3api put-bucket-versioning \
+  --bucket your-climate-data-bucket \
+  --versioning-configuration Status=Enabled
+
+# Copy and edit config template
+cp config/production_config.yaml.template config/production_config.yaml
+# Edit the file with your bucket name
 ```
 
 #### 4. Run Pipeline
 
 ```bash
-python -m src run --config config/production_config.yaml
+poetry run python -m src run --config config/production_config.yaml
 ```
 
 Or with the `--push` flag to override config:
 
 ```bash
-python -m src run --config config/demo_config.yaml --push
+poetry run python -m src run --config config/demo_config.yaml --push
+```
+
+**Verify the push worked:**
+```bash
+poetry run python -m src analyze --package climate/data
 ```
 
 ## CLI Reference
