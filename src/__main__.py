@@ -146,7 +146,7 @@ def analyze_package(args) -> int:
     try:
         from .quilt_analyzer import QuiltPackageAnalyzer
 
-        analyzer = QuiltPackageAnalyzer(args.package)
+        analyzer = QuiltPackageAnalyzer(args.package, registry=args.registry)
         analyzer.print_summary()
 
         # Export metadata if requested
@@ -265,6 +265,12 @@ def main() -> int:
     analyze_parser.add_argument(
         "package",
         help="Package name to analyze (e.g., climate/demo-sample)",
+    )
+    analyze_parser.add_argument(
+        "--registry",
+        type=str,
+        default=None,
+        help="Quilt registry URL (e.g., s3://my-bucket). If not provided, uses local registry",
     )
     analyze_parser.add_argument(
         "--export-metadata",

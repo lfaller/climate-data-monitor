@@ -18,21 +18,30 @@ logger = logging.getLogger(__name__)
 class QuiltPackageAnalyzer:
     """Analyze and inspect Quilt climate data packages."""
 
-    def __init__(self, package_name: str):
+    def __init__(self, package_name: str, registry: Optional[str] = None):
         """Initialize the analyzer with a package name.
 
         Args:
             package_name: Full package name (e.g., "climate/demo-sample")
+            registry: Optional registry URL (e.g., "s3://my-bucket")
+                     If not provided, uses default local Quilt registry
         """
         self.package_name = package_name
+        self.registry = registry
         self.package = None
         self.data = None
         self._load_package()
 
     def _load_package(self) -> None:
-        """Load the package from local Quilt storage."""
+        """Load the package from Quilt storage (local or S3)."""
         try:
-            self.package = quilt3.Package.browse(self.package_name)
+            if self.registry:
+                logger.info(f"Loading from registry: {self.registry}")
+                self.package = quilt3.Package.browse(
+                    self.package_name, registry=self.registry
+                )
+            else:
+                self.package = quilt3.Package.browse(self.package_name)
             logger.info(f"Loaded package: {self.package_name}")
         except Exception as e:
             logger.error(f"Failed to load package {self.package_name}: {e}")
