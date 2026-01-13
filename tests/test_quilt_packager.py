@@ -30,7 +30,6 @@ class TestQuiltPackagerInitialization:
                 "bucket": "test-bucket",
                 "package_name": "climate/test-data",
                 "registry": "s3://test-bucket",
-                "push_to_registry": False,
             },
             "logging": {"level": "INFO"},
         }
@@ -39,7 +38,7 @@ class TestQuiltPackagerInitialization:
         assert packager.bucket == "test-bucket"
         assert packager.package_name == "climate/test-data"
         assert packager.registry == "s3://test-bucket"
-        assert packager.push_enabled is False
+        assert packager.push_enabled is True  # Auto-detected from s3:// URL
 
     def test_init_parses_package_name(self):
         """Test that package name is correctly parsed into namespace/package."""
@@ -328,15 +327,13 @@ class TestRegistryOperations:
 
     @patch("src.quilt_packager.quilt3.Package")
     def test_push_to_registry_disabled(self, mock_package_class):
-        """Test building package locally when push is disabled."""
+        """Test building package locally with local registry."""
         mock_pkg = Mock()
 
         config = {
             "quilt": {
-                "bucket": "test-bucket",
                 "package_name": "climate/test",
-                "registry": "s3://test-bucket",
-                "push_to_registry": False,
+                "registry": "local",
             },
             "logging": {"level": "INFO"},
         }
@@ -435,16 +432,14 @@ class TestCompleteWorkflow:
 
     @patch("src.quilt_packager.quilt3.Package")
     def test_full_package_workflow(self, mock_package_class):
-        """Test complete package workflow."""
+        """Test complete package workflow with local registry."""
         mock_pkg = Mock()
         mock_package_class.return_value = mock_pkg
 
         config = {
             "quilt": {
-                "bucket": "test-bucket",
                 "package_name": "climate/test",
-                "registry": "s3://test-bucket",
-                "push_to_registry": False,
+                "registry": "local",
             },
             "logging": {"level": "INFO"},
         }
