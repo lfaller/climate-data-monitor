@@ -164,14 +164,6 @@ aws s3api put-bucket-versioning \
 
 Update `config/production_config.yaml` with your bucket name, then run with `--push` flag.
 
-## Code Quality
-
-- **No TODO/FIXME comments** - Clean codebase
-- **Type hints** throughout
-- **Comprehensive error handling**
-- **Well-documented functions**
-- **Follows PEP 8 standards**
-
 ## Real Data
 
 Includes 2 years of real NYC weather data from Open-Meteo API:
@@ -196,9 +188,9 @@ python -m src run --config config/production_config.yaml --push
 python -m src run --config config/demo_config.yaml --output results.json
 ```
 
-## For Recruiters
+## Key Features & Skills Demonstrated
 
-This project demonstrates:
+This project showcases:
 
 1. **Data Engineering** - Multi-stage validation pipeline with domain-specific logic
 2. **Software Engineering** - Clean architecture, comprehensive testing, proper error handling
