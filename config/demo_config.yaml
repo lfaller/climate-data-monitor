@@ -1,49 +1,18 @@
 # Demo Configuration for Climate Data Monitor
-# Used for testing with sample data
+# Used for testing with sample data (local, no S3)
 
 climate:
-  source_url: "file://data/sample_climate_data.csv"
-  api_key: "demo_mode"
-  download_dir: "data/downloads"
-  dataset_id: "GHCN_D"
-  geographic_scope: "demo"
-
-filtering:
-  enabled: false
-  station_ids: null
-  data_types: null
-
-quilt:
-  bucket: "climate-data-monitor-demo"
-  package_name: "climate/demo-sample"
-  registry: "s3://climate-data-monitor-demo"
-  push_to_registry: false
+  source_url: file://data/sample_climate_data.csv
+  download_dir: data/downloads
 
 quality:
   thresholds:
     min_quality_score: 75
     max_null_percentage: 15
-    max_outlier_percentage: 5
-    max_drift_percentage: 20
     temp_outlier_std_dev: 3
-    temp_min_valid: -60
-    temp_max_valid: 60
     precip_max_daily: 500
-    precip_outlier_std_dev: 4
+  output_dir: output/quality_reports
 
-  output_dir: "output/quality_reports"
-
-alerts:
-  enabled: false
-  email: null
-  slack_webhook: null
-
-scheduling:
-  check_interval_days: 30
-  auto_run: false
-
-logging:
-  level: "INFO"
-  log_dir: "logs"
-  file_logging: true
-  console_logging: true
+quilt:
+  package_name: climate/demo
+  registry: local
