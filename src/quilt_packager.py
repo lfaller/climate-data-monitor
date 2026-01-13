@@ -22,17 +22,16 @@ class QuiltPackager:
 
         Args:
             config: Configuration dictionary with quilt section containing:
-                - bucket: S3 bucket for registry
                 - package_name: Full package name (namespace/name)
-                - registry: S3 registry URL
-                - push_to_registry: Whether to push packages
+                - registry: Registry URL (s3://bucket or local)
+                - bucket: (Optional) S3 bucket name for registry
         """
         self.config = config
         quilt_config = config["quilt"]
 
-        self.bucket = quilt_config["bucket"]
-        self.registry = quilt_config["registry"]
-        self.push_enabled = quilt_config.get("push_to_registry", False)
+        self.registry = quilt_config.get("registry", "local")
+        self.bucket = quilt_config.get("bucket")  # Optional for local registries
+        self.push_enabled = self.registry.startswith("s3://")  # Auto-detect S3
 
         # Parse package name
         package_full_name = quilt_config["package_name"]

@@ -1,0 +1,18 @@
+# Production Configuration for Climate Data Monitor
+# Real data with Quilt versioning and S3 publishing
+
+climate:
+  source_url: file://data/real_nyc_2024.csv
+  download_dir: data/downloads
+
+quality:
+  thresholds:
+    min_quality_score: 75
+    max_null_percentage: 15
+    temp_outlier_std_dev: 3
+    precip_max_daily: 500
+  output_dir: output/quality_reports
+
+quilt:
+  package_name: climate/nyc-2024
+  registry: s3://climate-data-monitor-quilt
