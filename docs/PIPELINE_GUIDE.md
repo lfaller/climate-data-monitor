@@ -1,31 +1,13 @@
-# Climate Data Monitor - Pipeline Execution Guide
-
-This guide covers running the complete end-to-end climate data monitoring pipeline, from data ingestion through quality assessment to Quilt packaging and S3 registry integration.
-
-## Overview
-
-The pipeline coordinates four main phases:
-
-1. **Download & Validate** - Load and validate real climate data (Open-Meteo API or local files)
-2. **Quality Assessment** - Calculate 5 quality metrics (completeness, outliers, temporal coverage, seasonality, schema)
-3. **Package & Version** - Create Quilt packages with metadata
-4. **AI Analysis** (Optional) - Query data via Model Context Protocol (MCP) for Claude analysis
+# Pipeline Execution Guide
 
 ## Quick Start
 
-### Local Testing (Demo Mode)
-
-Run the pipeline with sample data without pushing to AWS:
+### Local Testing (Demo)
 
 ```bash
-python -m src run --config config/demo_config.yaml
+poetry install
+poetry run python -m src run --config config/demo_config.yaml
 ```
-
-This will:
-- Load real weather data from `data/real_nyc_2024.csv` (or your specified data file)
-- Validate the data format and values
-- Calculate 5 quality metrics (completeness, outliers, temporal, seasonality, schema)
-- Build a Quilt package locally to `~/.quilt/packages`
 
 Expected output:
 ```
@@ -33,401 +15,135 @@ Expected output:
 Climate Data Monitor - Pipeline Execution Report
 ============================================================
 Status: ✓ SUCCESS
-Timestamp: 2026-01-09T13:58:13.000Z
-Package: climate/demo-sample
-
-Data File: data/downloads/climate_data_processed_20260109_135813.csv
-
-Quality Metrics:
-  Quality Score: 100.0/100
-  Rows: 1098
-  Null %: 0.00%
-  Stations: 1
-
+Package: climate/demo
+Quality Score: 99/100
+Rows: 20
 ============================================================
 ```
 
-### Production with AWS S3
-
-To push packages to an AWS S3 Quilt registry:
-
-#### 1. Set Up AWS Credentials
-
-Choose one method:
-
-**Option A: Environment Variables (Recommended)**
-```bash
-export AWS_ACCESS_KEY_ID=your-access-key
-export AWS_SECRET_ACCESS_KEY=your-secret-key
-export AWS_DEFAULT_REGION=us-west-2
-```
-
-**Option B: AWS Credentials File**
-```bash
-aws configure
-# Follow the prompts to enter your access key, secret key, and region
-```
-
-**Option C: AWS Profile**
-```bash
-export AWS_PROFILE=your-profile-name
-python -m src run --config config/production_config.yaml
-```
-
-#### 2. Automated AWS Setup (Recommended)
-
-Use the helper script to automatically create S3 bucket and generate configuration:
-
-**Interactive mode (guided setup):**
-```bash
-poetry run python helper_scripts/setup_aws_s3.py
-```
-
-This will:
-- ✅ Validate your AWS credentials
-- ✅ Create an S3 bucket (or use existing)
-- ✅ Enable versioning (required for Quilt)
-- ✅ Block public access (security best practice)
-- ✅ Test read/write access
-- ✅ Generate `config/production_config.yaml`
-
-**Command-line mode (non-interactive):**
-```bash
-poetry run python helper_scripts/setup_aws_s3.py \
-  --bucket-name my-climate-data-bucket \
-  --region us-west-2
-```
-
-**For existing buckets:**
-```bash
-poetry run python helper_scripts/setup_aws_s3.py \
-  --bucket-name my-climate-data-bucket \
-  --skip-bucket-create
-```
-
-#### 3. Manual AWS Setup (Alternative)
-
-If you prefer manual setup:
+### Production with S3
 
 ```bash
-# Create bucket
-aws s3 mb s3://your-climate-data-bucket --region us-west-2
+# Set AWS credentials
+export AWS_ACCESS_KEY_ID=your-key
+export AWS_SECRET_ACCESS_KEY=your-secret
 
-# Enable versioning
+# Create S3 bucket
+aws s3 mb s3://your-bucket-name --region us-west-2
 aws s3api put-bucket-versioning \
-  --bucket your-climate-data-bucket \
+  --bucket your-bucket-name \
   --versioning-configuration Status=Enabled
 
-# Copy and edit config template
-cp config/production_config.yaml.template config/production_config.yaml
-# Edit the file with your bucket name
-```
+# Update config
+sed -i '' 's|climate-data-monitor-quilt|your-bucket-name|' config/production_config.yaml
 
-#### 4. Run Pipeline
-
-```bash
-poetry run python -m src run --config config/production_config.yaml
-```
-
-Or with the `--push` flag to override config:
-
-```bash
-poetry run python -m src run --config config/demo_config.yaml --push
-```
-
-**Verify the push worked:**
-```bash
-# Analyze package from S3 registry
-poetry run python -m src analyze climate/data --registry s3://your-climate-data-bucket
-```
-
-## CLI Reference
-
-### Basic Usage
-
-```bash
-python -m src run --config <config_file> [options]
-```
-
-### Options
-
-| Option | Type | Description |
-|--------|------|-------------|
-| `--config` | Path | **Required.** Path to YAML configuration file |
-| `--data-file` | Path | Optional. Override source_url with explicit data file path |
-| `--push` | Flag | Enable push to S3 registry (overrides config setting) |
-| `--output` | Path | Save detailed JSON results to file |
-
-### Examples
-
-**Run with sample data, save results to JSON:**
-```bash
-python -m src run --config config/demo_config.yaml --output results.json
-```
-
-**Run with custom data file:**
-```bash
-python -m src run --config config/demo_config.yaml --data-file path/to/my_data.csv
-```
-
-**Run with demo config but push to S3:**
-```bash
-python -m src run --config config/demo_config.yaml --push
-```
-
-### Analyze Command
-
-Analyze a Quilt package (local or from S3 registry):
-
-```bash
-python -m src analyze <package_name> [options]
-```
-
-**Options:**
-
-| Option | Description |
-|--------|-------------|
-| `<package_name>` | Package name to analyze (e.g., `climate/demo-sample`) |
-| `--registry` | S3 registry URL (e.g., `s3://my-bucket`). If not provided, uses local registry |
-| `--export-metadata` | Export package metadata to JSON file |
-| `--export-data` | Export package data to CSV file |
-
-**Examples:**
-
-```bash
-# Analyze local package
-python -m src analyze climate/demo-sample
-
-# Analyze package from S3 registry
-python -m src analyze climate/data --registry s3://climate-data-monitor-quilt
-
-# Export data to CSV
-python -m src analyze climate/data --registry s3://my-bucket --export-data output.csv
+# Run with S3 push
+poetry run python -m src run --config config/production_config.yaml --push
 ```
 
 ## Configuration
 
-### Configuration Sections
+Configs are simple YAML files with 3 sections:
 
-#### `climate`
-Data source and download settings:
-
+### `climate` section
 ```yaml
 climate:
-  source_url: "file://data/sample_climate_data.csv"  # Data source
-  api_key: "demo_mode"                                # API key if needed
-  download_dir: "data/downloads"                      # Where to store data
-  dataset_id: "GHCN_D"                                # Dataset identifier
-  geographic_scope: "production"                      # Informational
+  source_url: file://data/real_nyc_2024.csv  # Data file path
+  download_dir: data/downloads               # Temp storage
 ```
 
-#### `filtering` (optional)
-Filter data by stations or elements:
-
-```yaml
-filtering:
-  enabled: false
-  station_ids: null                    # ["USC00014821", "USC00023182"]
-  data_types: null                     # ["TMAX", "TMIN", "PRCP"]
-```
-
-#### `quality`
-Quality assessment thresholds:
-
+### `quality` section
 ```yaml
 quality:
   thresholds:
     min_quality_score: 75              # Minimum acceptable score
     max_null_percentage: 15            # Max null values allowed
-    max_outlier_percentage: 5          # Max outliers allowed
-    temp_outlier_std_dev: 3            # Temperature outlier threshold
-    temp_min_valid: -60                # Minimum valid temperature (°C)
-    temp_max_valid: 60                 # Maximum valid temperature (°C)
+    temp_outlier_std_dev: 3            # Outlier detection sensitivity
     precip_max_daily: 500              # Max daily precipitation (mm)
-  output_dir: "output/quality_reports" # Where to save reports
+  output_dir: output/quality_reports   # Report output location
 ```
 
-#### `quilt`
-Quilt package settings:
-
+### `quilt` section
 ```yaml
 quilt:
-  bucket: "climate-data-monitor-demo"     # S3 bucket name
-  package_name: "climate/demo-sample"     # Package name (namespace/name)
-  registry: "s3://climate-data-monitor-demo"  # Registry URL
-  push_to_registry: false                 # Push to S3 or build locally
+  package_name: climate/nyc-2024       # Quilt package name
+  registry: s3://your-bucket           # Registry URL (s3:// or local)
 ```
 
-#### `aws`
-AWS configuration (only needed for S3 push):
+## CLI Options
 
-```yaml
-aws:
-  region: "us-west-2"                 # AWS region
-  validate_credentials: true          # Validate credentials before run
-  test_bucket_access: true            # Test bucket access before run
+```bash
+# Basic run
+python -m src run --config config/demo_config.yaml
+
+# Override data file
+python -m src run --config config/demo_config.yaml \
+  --data-file path/to/data.csv
+
+# Enable S3 push
+python -m src run --config config/production_config.yaml --push
+
+# Save results to JSON
+python -m src run --config config/demo_config.yaml \
+  --output results.json
 ```
 
-#### `logging`
-Logging configuration:
+## Pipeline Stages
 
-```yaml
-logging:
-  level: "INFO"                       # DEBUG, INFO, WARNING, ERROR, CRITICAL
-  log_dir: "logs"                     # Directory for log files
-  file_logging: true                  # Enable file logging
-  console_logging: true               # Enable console output
-```
+### Stage 1: Download & Validate
+- Loads CSV file
+- Validates required columns (station_id, date, element, value)
+- Validates date format (YYYY-MM-DD)
+- Validates numeric values
+- Removes invalid rows
 
-## Understanding Results
+### Stage 2: Quality Assessment
+Calculates 5 metrics:
+- **Data Completeness** (30 pts) - Null percentage
+- **Outlier Rate** (25 pts) - Temperature anomalies
+- **Temporal Completeness** (20 pts) - Date coverage
+- **Seasonality Confidence** (15 pts) - Pattern reliability
+- **Schema Stability** (10 pts) - Required columns present
 
-### Output Files
+### Stage 3: Package & Version
+- Creates Quilt package
+- Attaches quality report metadata
+- Pushes to registry (local or S3)
 
-**Processed Data:**
-```
-data/downloads/climate_data_processed_YYYYMMDD_HHMMSS.csv
-```
+## Quality Score Interpretation
 
-**Quality Reports:**
-```
-output/quality_reports/quality_report_YYYYMMDD_HHMMSS.json
-```
-
-**Pipeline Logs:**
-```
-logs/pipeline.log
-```
-
-**Detailed Results (if `--output` specified):**
-```json
-{
-  "success": true,
-  "data_file": "data/downloads/climate_data_processed_20240112_143200.csv",
-  "quality_report": {
-    "timestamp": "2024-01-12T14:32:00.000Z",
-    "row_count": 200,
-    "column_count": 4,
-    "quality_score": 87.5,
-    "null_percentage_avg": 2.5,
-    "duplicate_count": 0,
-    "station_count": 5,
-    ...
-  },
-  "package_name": "climate/demo-sample",
-  "timestamp": "2024-01-12T14:32:00.000Z",
-  "errors": []
-}
-```
-
-### Quality Score Interpretation
-
-The quality score (0-100) is calculated from:
-
-- **Data Completeness (30%)** - Low null percentage, few duplicates
-- **Temperature Metrics (35%)** - Valid ranges, few outliers
-- **Precipitation Metrics (15%)** - Reasonable values
-- **Geographic Coverage (15%)** - Adequate station count
-- **Schema Stability (5%)** - All required columns present
-
-**Score Interpretation:**
-- 90-100: Excellent quality
-- 75-90: Good quality, acceptable for use
-- 50-75: Moderate quality, review results
-- Below 50: Poor quality, investigate data source
+- **95-100**: Excellent data quality
+- **85-95**: Very good, ready for analysis
+- **75-85**: Good, usable with review
+- **<75**: Investigate data issues
 
 ## Troubleshooting
 
-### AWS Credential Errors
-
-```
-ERROR: No AWS credentials found
-```
-
-**Solution:**
+**AWS credentials error:**
 ```bash
 export AWS_ACCESS_KEY_ID=your-key
 export AWS_SECRET_ACCESS_KEY=your-secret
-python -m src run --config config/production_config.yaml
+# or use: aws configure
 ```
 
-### Bucket Access Errors
+**S3 bucket not found:**
+- Check bucket exists: `aws s3 ls`
+- Check versioning: `aws s3api get-bucket-versioning --bucket your-bucket`
 
+**Data validation errors:**
+- Check CSV columns: station_id, date, element, value
+- Check date format: YYYY-MM-DD
+- Check numeric values for temperature/precipitation
+
+## Testing
+
+```bash
+# All tests
+pytest tests/ -v
+
+# With coverage
+pytest tests/ -v --cov=src --cov-report=html
+
+# Specific test
+pytest tests/test_quality_checker.py -v
 ```
-ERROR: Access denied to S3 bucket: your-bucket
-```
-
-**Solutions:**
-- Verify bucket exists: `aws s3 ls s3://your-bucket`
-- Check IAM permissions include S3 access
-- Verify bucket region matches config
-
-### Data Validation Errors
-
-```
-ERROR: Missing required columns: {'element', 'value'}
-```
-
-**Solution:**
-Ensure your data CSV has these required columns:
-- `station_id` - Weather station identifier
-- `date` - Observation date (YYYY-MM-DD format)
-- `element` - Measurement type (TMAX, TMIN, PRCP, etc.)
-- `value` - Numeric measurement value
-
-### Quality Score Too Low
-
-If the quality score is below your configured minimum:
-
-1. Check the quality report JSON for specific issues
-2. Review `null_percentage_avg`, `duplicate_count`, outlier counts
-3. Adjust thresholds in config if appropriate for your data
-
-## Integration with CI/CD
-
-### GitHub Actions Example
-
-```yaml
-name: Climate Data Monitor
-
-on:
-  schedule:
-    - cron: '0 2 * * *'  # Daily at 2 AM UTC
-
-jobs:
-  pipeline:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: |
-          pip install poetry
-          poetry install
-
-      - name: Run climate data pipeline
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          python -m src run --config config/production_config.yaml \
-            --output results-${{ github.run_id }}.json
-
-      - name: Upload results
-        uses: actions/upload-artifact@v2
-        with:
-          name: pipeline-results
-          path: results-*.json
-```
-
-## Next Steps
-
-- **Phase 2**: Enhanced drift detection and regional breakdowns
-- **Phase 3**: Automated scheduling and monitoring with CloudWatch
-- **MCP Integration**: Connect with Quilt MCP for AI-assisted analysis
-
-For more information, see [PROJECT_PLAN.md](PROJECT_PLAN.md).
